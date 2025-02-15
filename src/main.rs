@@ -1,5 +1,6 @@
 mod game;
 mod menu;
+mod utils;
 
 use bevy::{prelude::*, window::ExitCondition};
 use game::game_state::GameState;
@@ -23,10 +24,12 @@ fn main() {
     );
     app.init_state::<GameState>();
     app.add_systems(Startup, setup)
-        .add_plugins(game::game_plugin);
+        .add_plugins(game::game_plugin)
+        .add_plugins(menu::menu_plugin);
     app.run();
 }
 
 fn setup(mut commands: Commands) {
     commands.spawn(Camera2d);
 }
+

@@ -1,22 +1,60 @@
 mod menu_state;
 
+use bevy::color::palettes::css::CRIMSON;
 use bevy::prelude::*;
+
+use crate::game::game_state::GameState;
+use crate::utils::despawn_screen;
 
 #[derive(Component)]
 struct OnMainMenuScreen;
 
-#[derive(Component)]
-struct OnPausedMenuScreen;
+pub fn menu_plugin(app: &mut App) {
+    app.add_systems(OnEnter(GameState::MainMenu), setup_menu)
+        .add_systems(Update, close_menu.run_if(in_state(GameState::MainMenu)))
+        .add_systems(
+            OnExit(GameState::MainMenu),
+            despawn_screen::<OnMainMenuScreen>,
+        );
+}
 
-#[derive(Component)]
-struct OnSettingsMenuScreen;
+fn setup_menu(mut commands: Commands) {
+    commands
+        .spawn((
+            Node {
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
+                ..default()
+            },
+            OnMainMenuScreen,
+        ))
+        .with_children(|parent| {
+            parent
+                .spawn((
+                    Node {
+                        flex_direction: FlexDirection::Column,
+                        align_items: AlignItems::Center,
+                        ..default()
+                    },
+                    BackgroundColor(CRIMSON.into()),
+                ))
+                .with_children(|parent| {
+                    parent.spawn((
+                        Text::new("Menu UI"),
+                        TextFont {
+                            font_size: 32.,
+                            ..default()
+                        },
+                    ));
+                });
+        });
+}
 
-#[derive(Component)]
-struct OnSoundSettingsMenuScreen;
 
-const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
-const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
-const HOVERED_PRESSED_BUTTON: Color = Color::srgb(0.25, 0.65, 0.25);
-const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
-
-
+fn close_menu(mut next_state: ResMut<NextState<GameState>>, keys: Res<ButtonInput<KeyCode>>) {
+    if keys.just_pressed(KeyCode::KeyO) {
+        next_state.set(GameState::InGame);
+    }
+}
